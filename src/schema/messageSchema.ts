@@ -12,7 +12,7 @@ const MessageType = new GraphQLObjectType({
     name: "Message",
     fields: () => ({
         id: { type: GraphQLID },
-        message: { type: GraphQLString },
+        text: { type: GraphQLString },
         createdAt: { type: GraphQLString },
         updatedAt: { type: GraphQLString },
         userId: { type: GraphQLID },

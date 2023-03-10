@@ -31,7 +31,8 @@ model Message {
   text           String
   senderId       String
   sender         User          @relation(fields: [senderId], references: [id])
-  timestamp      DateTime
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @default(now())
   conversationId String?
   conversation   Conversation? @relation("conversationMessages", fields: [conversationId], references: [id], onDelete: Cascade)
   chatRoomId     String?

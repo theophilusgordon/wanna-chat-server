@@ -9,7 +9,6 @@ import {
     GraphQLSchema,
     GraphQLString,
 } from "graphql";
-import { getUserByIdValidation } from "../validations/userValidations";
 import UserErrorMessages from "../constants/userErrorMessages";
 
 const UserType = new GraphQLObjectType({
@@ -38,13 +37,8 @@ const RootQuery = new GraphQLObjectType({
         },
         user: {
             type: UserType,
-            args: { id: { type: GraphQLID } },
+            args: { id: { type: new GraphQLNonNull(GraphQLID) } },
             resolve(parent, args) {
-                const { error } = getUserByIdValidation.validate(args);
-                if (error) {
-                    throw new GraphQLError(error.message);
-                }
-
                 return prisma.user.findUnique({
                     where: {
                         id: args.id,

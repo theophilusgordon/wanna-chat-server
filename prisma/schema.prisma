@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String         @id @default(uuid())
+  email          String         @unique
+  phone          String?        @unique
+  username       String
+  password       String
+  firstName      String?
+  lastName       String?
+  otherNames     String?
+  profilePicture String?
+  avatar         String?
+  messages       Message[]
+  conversations  Conversation[] @relation("conversationParticipants")
+  chatRooms      ChatRoom[]     @relation("chatRoomParticipants")
+}
+
+model Message {
+  id             String        @id @default(uuid())
+  text           String
+  senderId       String
+  sender         User          @relation(fields: [senderId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @default(now())
+  conversationId String?
+  conversation   Conversation? @relation("conversationMessages", fields: [conversationId], references: [id], onDelete: Cascade)
+  chatRoomId     String?
+  chatRoom       ChatRoom?     @relation("chatRoomMessages", fields: [chatRoomId], references: [id], onDelete: Cascade)
+}
+
+model Conversation {
+  id           String    @id @default(uuid())
+  participants User[]    @relation("conversationParticipants")
+  messages     Message[] @relation("conversationMessages")
+}
+
+model ChatRoom {
+  id           String    @id @default(uuid())
+  name         String
+  participants User[]    @relation("chatRoomParticipants")
+  messages     Message[] @relation("chatRoomMessages")
+}

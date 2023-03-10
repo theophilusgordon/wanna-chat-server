@@ -4,7 +4,6 @@ dotenv.config();
 import cors from "cors";
 import {graphqlHTTP} from "express-graphql"
 import schema from "./schema/userSchema";
-import routes from "./routes/routes";
 
 const app = express();
 
@@ -15,7 +14,6 @@ app.use('/graphql', graphqlHTTP({
 		  schema,
 		  graphiql: process.env.NODE_ENV === 'development'
 }))
-app.use("/api/v1/", routes);
 
 const PORT = process.env.PORT || 8000;
 

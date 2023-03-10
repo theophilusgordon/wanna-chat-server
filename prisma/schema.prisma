@@ -11,42 +11,42 @@ datasource db {
 }
 
 model User {
-  id             String        @id @default(uuid())
-  email          String        @unique
-  phone			String			@unique
+  id             String         @id @default(uuid())
+  email          String         @unique
+  phone          String?        @unique
   username       String
   password       String
   firstName      String?
   lastName       String?
   otherNames     String?
   profilePicture String?
-  avatar		String
-  Conversation   Conversation? @relation(fields: [conversationId], references: [id])
-  conversationId String?
-  ChatRoom       ChatRoom?     @relation(fields: [chatRoomId], references: [id])
-  chatRoomId     String?
+  avatar         String?
+  messages       Message[]
+  conversations  Conversation[] @relation("conversationParticipants")
+  chatRooms      ChatRoom[]     @relation("chatRoomParticipants")
 }
 
 model Message {
   id             String        @id @default(uuid())
   text           String
   senderId       String
+  sender         User          @relation(fields: [senderId], references: [id])
   timestamp      DateTime
   conversationId String?
+  conversation   Conversation? @relation("conversationMessages", fields: [conversationId], references: [id])
   chatRoomId     String?
-  Conversation   Conversation? @relation(fields: [conversationId], references: [id])
-  ChatRoom       ChatRoom?     @relation(fields: [chatRoomId], references: [id])
+  chatRoom       ChatRoom?     @relation("chatRoomMessages", fields: [chatRoomId], references: [id])
 }
 
 model Conversation {
   id           String    @id @default(uuid())
-  participants User[]
-  messages     Message[]
+  participants User[]    @relation("conversationParticipants")
+  messages     Message[] @relation("conversationMessages")
 }
 
 model ChatRoom {
-  id       String    @id @default(uuid())
-  name     String
-  users    User[]
-  messages Message[]
+  id           String    @id @default(uuid())
+  name         String
+  participants User[]    @relation("chatRoomParticipants")
+  messages     Message[] @relation("chatRoomMessages")
 }

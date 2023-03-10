@@ -33,9 +33,9 @@ model Message {
   sender         User          @relation(fields: [senderId], references: [id])
   timestamp      DateTime
   conversationId String?
-  conversation   Conversation? @relation("conversationMessages", fields: [conversationId], references: [id])
+  conversation   Conversation? @relation("conversationMessages", fields: [conversationId], references: [id], onDelete: Cascade)
   chatRoomId     String?
-  chatRoom       ChatRoom?     @relation("chatRoomMessages", fields: [chatRoomId], references: [id])
+  chatRoom       ChatRoom?     @relation("chatRoomMessages", fields: [chatRoomId], references: [id], onDelete: Cascade)
 }
 
 model Conversation {

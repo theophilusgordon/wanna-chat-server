@@ -1,7 +1,7 @@
 import prisma from "../config/prisma";
-import hashPassword from "../utils/hashPassword";
+import { hashPassword, comparePassword } from "../utils/password";
 import {
-	GraphQLError,
+    GraphQLError,
     GraphQLID,
     GraphQLList,
     GraphQLNonNull,
@@ -10,6 +10,7 @@ import {
     GraphQLString,
 } from "graphql";
 import { getUserByIdValidation } from "../validations/userValidations";
+import UserErrorMessages from "../constants/userErrorMessages";
 
 const UserType = new GraphQLObjectType({
     name: "User",
@@ -39,11 +40,11 @@ const RootQuery = new GraphQLObjectType({
             type: UserType,
             args: { id: { type: GraphQLID } },
             resolve(parent, args) {
-				const {error} = getUserByIdValidation.validate(args)
-				if (error) {
-					throw new GraphQLError(error.message);
-				}
-				
+                const { error } = getUserByIdValidation.validate(args);
+                if (error) {
+                    throw new GraphQLError(error.message);
+                }
+
                 return prisma.user.findUnique({
                     where: {
                         id: args.id,
@@ -88,10 +89,40 @@ const mutation = new GraphQLObjectType({
                 return user;
             },
         },
+        loginUser: {
+            type: UserType,
+            args: {
+                email: { type: new GraphQLNonNull(GraphQLString) },
+                password: { type: new GraphQLNonNull(GraphQLString) },
+            },
+            async resolve(parent, args) {
+                const user = await prisma.user.findUnique({
+                    where: {
+                        email: args.email,
+                    },
+                });
+                if (!user) {
+                    throw new GraphQLError(
+                        UserErrorMessages.invalidCredentials()
+                    );
+                }
+                const isPasswordValid = await comparePassword(
+                    args.password,
+                    user.password
+                );
+                if (!isPasswordValid) {
+                    throw new GraphQLError(
+                        UserErrorMessages.invalidCredentials()
+                    );
+                }
+                return user;
+            },
+        },
         updateUser: {
             type: UserType,
             args: {
                 id: { type: GraphQLID },
+                email: { type: GraphQLString },
                 phone: { type: GraphQLString },
                 username: { type: GraphQLString },
                 password: { type: GraphQLString },
@@ -102,10 +133,23 @@ const mutation = new GraphQLObjectType({
                 avatar: { type: GraphQLString },
             },
             async resolve(parent, args) {
-				let hashedPassword;
+                let hashedPassword;
                 if (args.password) {
                     hashedPassword = await hashPassword(args.password);
                 }
+
+                const userExists = await prisma.user.findUnique({
+                    where: {
+                        email: args.email,
+                    },
+                });
+
+                if (!userExists) {
+                    throw new GraphQLError(
+                        UserErrorMessages.notUser()
+                    );
+                }
+
                 const updatedUser = await prisma.user.update({
                     where: {
                         id: args.id,

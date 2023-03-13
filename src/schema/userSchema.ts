@@ -183,3 +183,7 @@ export default new GraphQLSchema({
     query: RootQuery,
     mutation,
 });
+
+export {
+	UserType,
+}

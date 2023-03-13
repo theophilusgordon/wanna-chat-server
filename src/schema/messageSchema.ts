@@ -102,3 +102,7 @@ export default new GraphQLSchema({
     query: RootQuery,
     mutation,
 });
+
+export {
+	MessageType,
+}
